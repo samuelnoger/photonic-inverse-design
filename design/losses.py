@@ -37,7 +37,7 @@ def splitter_loss(pred_field, rho, solver, targets, total_target=0.96, bin_weigh
     return loss, powers
 
 
-def wdm_loss(pred_field, rho, solver, targets, total_target=0.96, bin_weight=0.05, tv_weight=0.015, crosstalk_weight=3.0):
+def wdm_loss(pred_field, rho, solver, targets, total_target=0.96, bin_weight=0.05, tv_weight=0.015, crosstalk_weight=2.0):
     """
     Loss function for WDM demultiplexers:
     Maximizes pass-port transmission and applies quadratic + linear/log extinction

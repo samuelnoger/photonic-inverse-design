@@ -146,6 +146,32 @@ def plot_wdm_result(result, fitter):
     plt.tight_layout()
     plt.show()
 
+    history = result["history"]
+    steps = range(1, len(history["loss"]) + 1)
+
+    # powers_all shape: (n_steps, n_wls, n_ports)
+    powers_all = np.array(history["powers_all"]) 
+
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+
+    colors = ["#2b5c8f", "#A31A4F", "#2ca02c", "#d95f02"]
+    for i, wl in enumerate(wls):
+        ax.plot(
+            steps,
+            powers_all[:, i, i] * 100,
+            label=f"λ = {wl:.2f} µm → Port {i+1}",
+            color=colors[i % len(colors)],
+            lw=1.5,
+        )
+
+    ax.set_xlabel("Optimization Step")
+    ax.set_ylabel("Guided Transmission (%)")
+    ax.set_title(f"Training History & Convergence [{result['device_type']}]")
+    ax.grid(True, alpha=0.3)
+    ax.legend(loc="lower right")
+    plt.tight_layout()
+    plt.show()
+
 
 def plot_spectrum(res,fitter, wl_min=1.20, wl_max=1.70, n_pts=40, in_db=False):
         """
@@ -155,7 +181,7 @@ def plot_spectrum(res,fitter, wl_min=1.20, wl_max=1.70, n_pts=40, in_db=False):
         wls_sweep = np.linspace(wl_min, wl_max, n_pts)
         port_traces = []
         for w in tqdm(wls_sweep, desc="Sweeping Spectrum"):
-            s_w = HelmholtzSolver2D.from_args(fitter.config, geometry=fitter.geometry, wl_override=float(w))
+            s_w = HelmholtzSolver2D.from_args(fitter.cfg, geometry=fitter.geometry, wl_override=float(w))
             _, p_w = fitter.evaluate(res["rho"], solver=s_w)
             port_traces.append(p_w)
 
@@ -165,7 +191,7 @@ def plot_spectrum(res,fitter, wl_min=1.20, wl_max=1.70, n_pts=40, in_db=False):
 
         for p_idx in range(port_traces.shape[1]):
             y_val = 10.0 * np.log10(np.clip(port_traces[:, p_idx], 1e-4, 1.0)) if in_db else port_traces[:, p_idx] * 100.0
-            ax.plot(wls_sweep, y_val, "-o", markersize=4, lw=2, color=colors[p_idx % len(colors)], label=f"Port {p_idx + 1}")
+            ax.plot(wls_sweep, y_val, "-o", markersize=3, lw=1, color=colors[p_idx % len(colors)], label=f"Port {p_idx + 1}")
 
         for w_design in fitter.wls:
             ax.axvline(w_design, color="gray", ls="--", alpha=0.6, label=f"Design λ = {w_design:.2f} µm")

@@ -56,8 +56,8 @@ class DeviceGeometry:
 
     def get_pin_masks(self, n_pin, flare_margin=16):
         """
-        Pins left/right port interfaces to match the waveguides AND pins the dead
-        top-left / bottom-left outer corners to SiO2 on `self.device`.
+        Pins left/right port interfaces to match the waveguides (1.0 = Si, 0.0 = SiO2)
+        AND pins dead outer corners to SiO2 (0.0) in [0, 1] density space.
         """
         nx_d, ny_d = self.design_shape
         thresh = 0.5 * (self.eps_bg + self.eps_si)
@@ -68,15 +68,15 @@ class DeviceGeometry:
         right_t = torch.from_numpy(right_si).to(self.device)
 
         pin = torch.zeros(nx_d, ny_d, device=self.device)
-        pin_z = torch.zeros(nx_d, ny_d, device=self.device)
+        pin_val = torch.zeros(nx_d, ny_d, device=self.device)
 
-        # 1. Pin left and right waveguide port columns
+        # 1. Pin left and right waveguide port columns in [0, 1]
         pin[:n_pin, :] = 1.0
-        pin_z[:n_pin, :] = (2.0 * left_t - 1.0) * 2.0
+        pin_val[:n_pin, :] = left_t
         pin[-n_pin:, :] = 1.0
-        pin_z[-n_pin:, :] = (2.0 * right_t - 1.0) * 2.0
+        pin_val[-n_pin:, :] = right_t
 
-        # 2. Pin dead top-left / bottom-left corners outside a flaring envelope to oxide (-2.0)
+        # 2. Pin dead top-left / bottom-left corners outside a flaring envelope to oxide (0.0)
         x_norm = torch.linspace(0.0, 1.0, nx_d, device=self.device)[:, None]
         y_abs = torch.abs(torch.arange(ny_d, device=self.device, dtype=torch.float32)[None, :] - (ny_d - 1) / 2.0)
         max_port_extent = max(abs(off) for off in self.port_offsets_y) + self.wg_half
@@ -84,12 +84,12 @@ class DeviceGeometry:
 
         dead_corner = (y_abs > allowed_half_y) & (pin == 0.0)
         pin[dead_corner] = 1.0
-        pin_z[dead_corner] = -2.0
+        pin_val[dead_corner] = 0.0
 
-        return pin, pin_z
+        return pin, pin_val
 
     def init_latent(self, init_mode="branched", fill_val=0.5):
-        """Initializes latent design tensor z directly on `self.device`."""
+        """Initializes design density tensor z in [0, 1] directly on `self.device`."""
         nx_d, ny_d = self.design_shape
         x = torch.linspace(0, 1, nx_d, device=self.device)[:, None]
         y = torch.arange(ny_d, device=self.device, dtype=torch.float32)[None, :] - ((ny_d - 1) / 2.0)
@@ -105,41 +105,23 @@ class DeviceGeometry:
             half_width = float(self.wg_half) + x * float(max_off + self.wg_half)
             rho0 = torch.clamp(torch.sigmoid((half_width - torch.abs(y)) / 2.0), 0.05, 0.95)
         elif init_mode == "empty":
-            rho0 = torch.full((nx_d, ny_d), 0.10, device=self.device)
+            rho0 = torch.full((nx_d, ny_d), 0.25, device=self.device)
         elif init_mode == "filled":
-            rho0 = torch.full((nx_d, ny_d), 0.90, device=self.device)
+            rho0 = torch.full((nx_d, ny_d), 0.85, device=self.device)
         else:
             rho0 = torch.full((nx_d, ny_d), float(np.clip(fill_val, 0.05, 0.95)), device=self.device)
 
-        return torch.logit(rho0)
-
-
-class Splitter1x2Geometry(DeviceGeometry):
-    def __init__(self, config, device="cpu"):
-        d = vars(config) if not isinstance(config, dict) else config
-        po = d["port_offset"]
-        super().__init__(d, port_offsets_y=[-po, +po], device=device)
-
-
-class Splitter1x3Geometry(DeviceGeometry):
-    def __init__(self, config, device="cpu"):
-        d = vars(config) if not isinstance(config, dict) else config
-        po = d["port_offset"]
-        super().__init__(d, port_offsets_y=[-po, 0, +po], device=device)
-
-
-class WDM1x2Geometry(Splitter1x2Geometry):
-    """1x2 Wavelength Demultiplexer: routes wls[0] -> Port 1 and wls[1] -> Port 2."""
-    pass
+        return rho0.clone()
 
 
 def build_geometry(config, device="cpu"):
     d = vars(config) if not isinstance(config, dict) else config
     dev_type = d.get("device_type", "splitter_1x2")
-    if dev_type == "splitter_1x2":
-        return Splitter1x2Geometry(d, device=device)
-    elif dev_type == "splitter_1x3":
-        return Splitter1x3Geometry(d, device=device)
-    elif dev_type == "wdm_1x2":
-        return WDM1x2Geometry(d, device=device)
+    po = d["port_offset"]
+
+    if dev_type in ("splitter_1x2", "wdm_1x2"):
+        return DeviceGeometry(d, port_offsets_y=[-po, +po], device=device)
+    elif dev_type in ("splitter_1x3", "wdm_1x3"):
+        return DeviceGeometry(d, port_offsets_y=[-po, 0, +po], device=device)
+
     raise ValueError(f"Unknown device_type: '{dev_type}'")
