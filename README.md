@@ -9,7 +9,7 @@ Instead of hand-tuning waveguide geometries, this project treats the silicon per
 ## Key Features
 
 * **2D Scalar FDFD Helmholtz Solver ($E_z$ / TM):** 5-point finite-difference stencil with stretched-coordinate Perfectly Matched Layers (PML), exact 1D discrete slab eigenmode injection/projection, and Silicon-on-Insulator (SOI) material dispersion.
-* **Exact Adjoint Differentiation:** Custom `torch.autograd.Function` that caches the forward sparse LU factorization (`splu`) and computes exact analytical permittivity gradients ($\partial \mathcal{L} / \partial \varepsilon = -k_0^2 \Delta\varepsilon \text{Re}\{\lambda_{\text{adj}} E_z\}$) in a single transposed solve (`trans="T"`).
+* **Exact Adjoint Differentiation:** Custom `torch.autograd.Function` that caches the forward sparse LU factorization (`splu`) and computes exact analytical permittivity gradients \[\partial \mathcal{L} / \partial \varepsilon = -k_0^2 \Delta\varepsilon \text{Re}\{\lambda_{\text{adj}} E_z\}\] in a single transposed solve (`trans="T"`).
 * **Two-Stage Fabrication-Aware Optimization (following Su et al., 2017):**
   * **Stage 1 (Continuous + Neighbor Biasing):** Optimizes pixel densities directly in $z \in [0, 1]$ and applies a circular disk neighbor-biasing update after each step (`bias_k`, `bias_k_avg`, `bias_p`, radius `smooth_sigma`) to suppress sub-wavelength pinholes and isolated silicon islands without premature self-biasing.
   * **Stage 2 (Discrete Level-Set Boundary Polish):** Enforces hard minimum hole/feature diameters and smooth radius of curvature via morphological opening/closing and a Straight-Through Estimator (STE), eliminating the gray-to-binary performance drop.
