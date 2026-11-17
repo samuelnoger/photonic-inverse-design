@@ -30,7 +30,7 @@ class PhotonicConfig:
     ny: Optional[int] = None
 
     # Optimization & Neighbor Biasing Defaults
-    smooth_sigma: float = 3.5
+    smooth_sigma: float = 3.0
     flare_margin: int = 6
     init_mode: str = "branched"
     steps: int = 200
@@ -38,11 +38,17 @@ class PhotonicConfig:
     total_target: float = 0.96
     robust_delta: float = 0.0
     robust_start: float = 0.5
-    bias_k: float = 0.018
+    bias_k: float = 0.012
     bias_k_avg: float = 12.0
     bias_p: int = 3
     stage1_frac: float = 0.60
     device: str = "cpu"
+    drc_radius: int = 2        
+    ls_step_px: float = 0.5        
+    ls_clean_every: int = 10        
+    ls_vel_sigma: float = 1.5  
+    
+    method: str = "beta"      # "beta" (simple) or "nb" (neighbor biasing + level set)
 
     def __post_init__(self):
         if self.x_out_start is None:
@@ -59,8 +65,8 @@ class PhotonicConfig:
 DEVICE_PRESETS = {
     "splitter_1x2": dict(design_len_x=120, design_half_y=48, port_offset=36, wls=[1.55], init_mode="branched", smooth_sigma=3.5, flare_margin=6, steps=180),
     "splitter_1x3": dict(design_len_x=150, design_half_y=72, port_offset=50, wls=[1.55], init_mode="branched", smooth_sigma=3.5, flare_margin=6, steps=160),
-    "wdm_1x2":      dict(design_len_x=200, design_half_y=65, port_offset=35, wls=[1.31, 1.55], init_mode="filled", smooth_sigma=3.0, flare_margin=500, steps=250),
-    "wdm_1x3":      dict(design_len_x=260, design_half_y=105, port_offset=60, wls=[1.50, 1.54, 1.58], init_mode="filled", smooth_sigma=2.0, flare_margin=500, steps=300),
+    "wdm_1x2":      dict(design_len_x=200, design_half_y=65, port_offset=35, wls=[1.31, 1.55], init_mode="filled", smooth_sigma=3.0, flare_margin=500, steps=250, method="nb"),
+    "wdm_1x3":      dict(design_len_x=260, design_half_y=105, port_offset=60, wls=[1.50, 1.54, 1.58], init_mode="filled", smooth_sigma=2.0, flare_margin=500, steps=300, method="nb"),
 }
 
 
