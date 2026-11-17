@@ -25,8 +25,8 @@ Instead of hand-tuning waveguide geometries, this project treats the silicon per
 ### 1. Installation
 
 ```bash
-git clone [https://github.com/samuelnoger/neural-photonics.git](https://github.com/samuelnoger/neural-photonics.git)
-cd neural-photonics
+git clone [https://github.com/samuelnoger/photonics-inverse-design.git](https://github.com/samuelnoger/photonics-inverse-design.git)
+cd photonics-inverse-design
 pip install numpy scipy torch matplotlib tqdm
 ```
 
