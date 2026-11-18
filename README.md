@@ -25,7 +25,7 @@ Instead of hand-tuning waveguide geometries, this project treats the silicon per
 ### 1. Installation
 
 ```bash
-git clone [https://github.com/samuelnoger/photonics-inverse-design.git](https://github.com/samuelnoger/photonics-inverse-design.git)
+git clone https://github.com/samuelnoger/photonics-inverse-design.git
 cd photonics-inverse-design
 pip install numpy scipy torch matplotlib tqdm
 ```
@@ -89,7 +89,7 @@ This repository is designed as a fast, self-contained 2D effective-index sandbox
 
 ## References & Citation
 
-The two-stage optimization pipeline, circular neighborhood biasing scheme (Equations 2–6), and three-channel WDM demultiplexer formulation implemented in this repository are based on the work of Jelena Vučković's group at Stanford University:
+The two-stage optimization pipeline, circular neighborhood biasing scheme (Equations 2–6 of Su et al., 2018), and three-channel WDM demultiplexer formulation implemented in this repository are based on the work of Jelena Vučković's group at Stanford University:
 
 1. **L. Su, A. Y. Piggott, N. V. Sapra, J. Petykiewicz, and J. Vučković**, *"Inverse design and demonstration of a compact on-chip narrowband three-channel wavelength demultiplexer,"* ACS Photonics **5**(2), 301–305 (2018) / [arXiv:1709.08809](https://arxiv.org/abs/1709.08809) (2017).
 2. **A. Y. Piggott, J. Petykiewicz, L. Su, and J. Vučković**, *"Fabrication-constrained nanophotonic inverse design,"* Scientific Reports **7**, 1786 (2017).
