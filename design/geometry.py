@@ -107,7 +107,7 @@ class DeviceGeometry:
         elif init_mode == "empty":
             rho0 = torch.full((nx_d, ny_d), 0.25, device=self.device)
         elif init_mode == "filled":
-            rho0 = torch.full((nx_d, ny_d), 0.85, device=self.device)
+            rho0 = torch.full((nx_d, ny_d), 0.82, device=self.device)
         else:
             rho0 = torch.full((nx_d, ny_d), float(np.clip(fill_val, 0.05, 0.95)), device=self.device)
 
